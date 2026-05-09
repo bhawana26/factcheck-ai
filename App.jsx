@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-
+import.meta.env.VITE_GEMINI_KEY
 const STATUSES = {
   VERIFIED: { label: "Verified", color: "#10B981", bg: "#ECFDF5", icon: "✓" },
   INACCURATE: { label: "Inaccurate", color: "#F59E0B", bg: "#FFFBEB", icon: "⚠" },
@@ -8,7 +8,8 @@ const STATUSES = {
 };
 
 async function extractAndVerifyClaims(pdfBase64) {
-  const extractRes = await fetch("AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM", {
+  const res = await fetch(
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_KEY}`, {
     method: "POST",
     body: JSON.stringify({
   contents: [
@@ -33,7 +34,8 @@ ${pdfBase64}`
 }
 
 async function verifySingleClaim(claim) {
-  const res = await fetch("AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM", {
+  const res = await fetch(
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${import.meta.env.VITE_GEMINI_KEY}`,{
     method: "POST",
     body: JSON.stringify({
   contents: [
