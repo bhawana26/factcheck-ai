@@ -123,18 +123,51 @@ async function toBase64(file) {
   });
 }
 
-async function callClaude(body) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  return res.json();
+async function callGemini(prompt) {
+const res = await fetch(
+`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM}`,
+{
+method: "POST",
+headers: {
+"Content-Type": "application/json"
+},
+body: JSON.stringify({
+contents: [
+{
+parts: [
+{
+text: prompt
+}
+]
+}
+]
+})
+}
+);
+
+const data = await res.json();
+
+console.log(data);
+
+return data;
 }
 
+
 function parseJSON(text) {
-  const clean = text.replace(/```json|```/g, "").trim();
-  return JSON.parse(clean);
+try {
+const clean = text
+.replace(/`json/g, "")
+      .replace(/`/g, "")
+.trim();
+
+```
+return JSON.parse(clean);
+```
+
+} catch (e) {
+console.error("JSON Parse Error:", e);
+return [];
+}
 }
 
 function renderClaimCard(claim, result) {
@@ -195,20 +228,29 @@ async function handleAnalyze() {
     const base64 = await toBase64(selectedFile);
 
     // Step 1: Extract
-    const extractData = await callClaude({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: `You are a claim extraction expert. Extract ONLY specific, verifiable factual claims from documents — stats, numbers, dates, financial figures, technical specs, named events with dates, percentages, rankings. Return ONLY a JSON array (no markdown, no extra text) like: [{"id":1,"claim":"...","context":"brief context"}]. Extract 5-12 claims max. Skip vague opinions.`,
-      messages: [{
-        role: "user",
-        content: [
-          { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
-          { type: "text", text: "Extract all specific, verifiable factual claims from this PDF." }
-        ]
-      }]
-    });
+    const extractData = await callGemini(`
+Extract ONLY factual claims from this PDF text.
 
-    const extractText = extractData.content.map(b => b.text || "").join("");
+Return ONLY valid JSON array.
+
+Format:
+[
+{
+"id":1,
+"claim":"text",
+"context":"text"
+}
+]
+
+PDF content:
+${base64.slice(0, 10000)}
+`);
+
+    
+
+    const extractText =
+extractData.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+
     claimsData = parseJSON(extractText);
 
     // Render placeholders
@@ -235,18 +277,29 @@ async function handleAnalyze() {
       results[claim.id] = { status: "CHECKING" };
       renderClaimCard(claim, results[claim.id]);
 
-      const verifyData = await callClaude({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        system: `You are a fact-checking agent. Use web search to verify claims. Return ONLY JSON (no markdown): {"status":"VERIFIED"|"INACCURATE"|"FALSE","confidence":0-100,"explanation":"2-3 sentences","correction":null or "the correct fact if wrong","sources":["source1","source2"]}`,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
-        messages: [{
-          role: "user",
-          content: `Fact-check this claim: "${claim.claim}"\nContext: ${claim.context}\n\nSearch the web, verify accuracy, and return your verdict as JSON.`
-        }]
-      });
+      const verifyData = await callGemini(`
+Fact-check this claim:
 
-      const verifyText = verifyData.content.map(b => b.text || "").join("");
+"${claim.claim}"
+
+Context:
+${claim.context}
+
+Return ONLY JSON:
+
+{
+"status":"VERIFIED",
+"confidence":90,
+"explanation":"short explanation",
+"correction":null,
+"sources":[]
+}
+`);
+
+
+      const verifyText =
+verifyData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+
       let verdict;
       try { verdict = parseJSON(verifyText); }
       catch { verdict = { status: "FALSE", confidence: 0, explanation: "Could not verify.", correction: null, sources: [] }; }
