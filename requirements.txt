@@ -1,0 +1,16 @@
+# This is a Node.js/React project. Python requirements below are for reference only.
+# See package.json for Node dependencies.
+
+# Node.js >= 18 required
+# npm >= 9 required
+
+# Key npm packages (see package.json):
+# react ^18.2.0
+# react-dom ^18.2.0
+# vite ^5.2.0
+# @vitejs/plugin-react ^4.2.1
+
+# External APIs used (no install needed):
+# Anthropic API - https://api.anthropic.com/v1/messages
+#   Model: claude-sonnet-4-20250514
+#   Tools: web_search_20250305 (built-in Anthropic tool)

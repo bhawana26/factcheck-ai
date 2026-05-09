@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>FactCheck AI — PDF Fact Verification</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:#F8FAFC;min-height:100vh}
+.header{background:#0D1B3E;padding:16px 32px;display:flex;align-items:center;gap:12}
+.logo{width:36px;height:36px;background:#00C6BE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#0D1B3E;flex-shrink:0}
+.logo-text h1{color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.3px}
+.logo-text p{color:#7A96B0;font-size:12px}
+.container{max-width:860px;margin:0 auto;padding:32px 20px}
+.upload-area{border:2px dashed #CBD5E1;border-radius:16px;background:#fff;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:24px}
+.upload-area:hover,.upload-area.dragover{border-color:#00C6BE;background:#E0F7F6}
+.upload-area.has-file{border-color:#10B981;background:#ECFDF5}
+.upload-icon{font-size:40px;margin-bottom:8px}
+.upload-title{font-weight:600;color:#1E293B;font-size:16px}
+.upload-sub{color:#6B7280;font-size:13px;margin-top:4px}
+.btn{width:100%;padding:14px;border-radius:12px;border:none;background:#0D1B3E;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:28px;transition:background 0.2s;font-family:inherit}
+.btn:disabled{background:#CBD5E1;cursor:not-allowed}
+.progress-bar{background:#E2E8F0;border-radius:8px;height:8px;margin-bottom:24px;overflow:hidden}
+.progress-fill{background:#00C6BE;height:100%;transition:width 0.4s;border-radius:8px}
+.summary{display:flex;gap:12px;margin-bottom:28px}
+.summary-card{flex:1;border-radius:12px;padding:14px 12px;text-align:center;border:1.5px solid transparent}
+.summary-card .val{font-size:28px;font-weight:800}
+.summary-card .lbl{font-size:12px;color:#6B7280;font-weight:500}
+.claim-card{border-radius:14px;padding:20px 22px;margin-bottom:14px;border:1.5px solid #E2E8F0;background:#fff;transition:all 0.3s}
+.claim-header{display:flex;gap:12px;align-items:flex-start}
+.claim-badge{width:28px;height:28px;min-width:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
+.claim-status{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
+.claim-text{font-weight:600;color:#1E293B;font-size:15px;margin-bottom:6px;line-height:1.5}
+.claim-explanation{color:#374151;font-size:13.5px;line-height:1.6}
+.correction-box{background:#fff;border:1px solid #FCD34D;border-radius:8px;padding:8px 12px;margin-top:8px}
+.correction-label{font-size:12px;font-weight:700;color:#92400E}
+.correction-text{font-size:13px;color:#78350F}
+.sources{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+.source-tag{background:#E2E8F0;color:#475569;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
+.error-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px 20px;color:#991B1B;margin-bottom:20px}
+.confidence{font-size:12px;color:#6B7280}
+.done-msg{text-align:center;padding:20px;color:#6B7280;font-size:14px}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.spinning{animation:spin 1s linear infinite}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">F</div>
+  <div class="logo-text">
+    <h1>FactCheck AI</h1>
+    <p>Automated PDF Fact-Verification Agent</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+    <div class="upload-icon" id="uploadIcon">⬆️</div>
+    <div class="upload-title" id="uploadTitle">Drop your PDF here or click to upload</div>
+    <div class="upload-sub" id="uploadSub">Marketing reports, press releases, research docs — any PDF with factual claims</div>
+    <input type="file" id="fileInput" accept=".pdf" style="display:none" onchange="handleFileChange(event)"/>
+  </div>
+
+  <button class="btn" id="analyzeBtn" onclick="handleAnalyze()" disabled>🔍 Analyze & Fact-Check PDF</button>
+
+  <div class="progress-bar" id="progressBar" style="display:none">
+    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div id="errorBox" style="display:none" class="error-box"></div>
+  <div id="summaryRow" class="summary" style="display:none">
+    <div class="summary-card" style="background:#ECFDF5;border-color:#10B98140"><div class="val" style="color:#10B981" id="sumVerified">0</div><div class="lbl">Verified</div></div>
+    <div class="summary-card" style="background:#FFFBEB;border-color:#F59E0B40"><div class="val" style="color:#F59E0B" id="sumInaccurate">0</div><div class="lbl">Inaccurate</div></div>
+    <div class="summary-card" style="background:#FEF2F2;border-color:#EF444440"><div class="val" style="color:#EF4444" id="sumFalse">0</div><div class="lbl">False / No Evidence</div></div>
+    <div class="summary-card" style="background:#EEF2FF;border-color:#6366F140"><div class="val" style="color:#6366F1" id="sumTotal">0</div><div class="lbl">Total Claims</div></div>
+  </div>
+
+  <div id="claimsList"></div>
+  <div id="doneMsg" style="display:none" class="done-msg"></div>
+</div>
+
+<script>
+const STATUSES = {
+  VERIFIED:   { label: "Verified",              color: "#10B981", bg: "#ECFDF5", icon: "✓" },
+  INACCURATE: { label: "Inaccurate",            color: "#F59E0B", bg: "#FFFBEB", icon: "⚠" },
+  FALSE:      { label: "False / No Evidence",   color: "#EF4444", bg: "#FEF2F2", icon: "✗" },
+  CHECKING:   { label: "Checking...",            color: "#6366F1", bg: "#EEF2FF", icon: "⟳" },
+};
+
+let selectedFile = null;
+let claimsData = [];
+
+function handleFileChange(e) {
+  const f = e.target.files[0];
+  if (f && f.type === "application/pdf") setFile(f);
+}
+
+function setFile(f) {
+  selectedFile = f;
+  const area = document.getElementById("uploadArea");
+  area.className = "upload-area has-file";
+  document.getElementById("uploadIcon").textContent = "📄";
+  document.getElementById("uploadTitle").textContent = f.name;
+  document.getElementById("uploadSub").textContent = (f.size / 1024).toFixed(1) + " KB · Click to change";
+  document.getElementById("analyzeBtn").disabled = false;
+  area.ondragover = e => { e.preventDefault(); area.classList.add("dragover"); };
+  area.ondragleave = () => area.classList.remove("dragover");
+  area.ondrop = e => { e.preventDefault(); area.classList.remove("dragover"); const d = e.dataTransfer.files[0]; if (d?.type === "application/pdf") setFile(d); };
+}
+
+document.getElementById("uploadArea").ondragover = e => { e.preventDefault(); document.getElementById("uploadArea").classList.add("dragover"); };
+document.getElementById("uploadArea").ondragleave = () => document.getElementById("uploadArea").classList.remove("dragover");
+document.getElementById("uploadArea").ondrop = e => { e.preventDefault(); document.getElementById("uploadArea").classList.remove("dragover"); const f = e.dataTransfer.files[0]; if (f?.type === "application/pdf") setFile(f); };
+
+async function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(",")[1]);
+    r.onerror = () => rej(new Error("Read failed"));
+    r.readAsDataURL(file);
+  });
+}
+
+async function callClaude(body) {
+  const res = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
+function parseJSON(text) {
+  const clean = text.replace(/```json|```/g, "").trim();
+  return JSON.parse(clean);
+}
+
+function renderClaimCard(claim, result) {
+  const statusKey = result?.status || null;
+  const st = statusKey ? STATUSES[statusKey] : null;
+  const card = document.getElementById("claim-" + claim.id);
+  if (!card) return;
+
+  card.style.background = st ? st.bg : "#fff";
+  card.style.borderColor = st ? st.color + "40" : "#E2E8F0";
+
+  let html = `<div class="claim-header">
+    <div class="claim-badge ${statusKey === "CHECKING" ? "spinning" : ""}" style="background:${st ? st.color : "#CBD5E1"}">${st ? st.icon : "?"}</div>
+    <div style="flex:1">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span class="claim-status" style="color:${st ? st.color : "#6B7280"}">${st ? st.label : "Pending"}</span>
+        ${result?.confidence !== undefined && statusKey !== "CHECKING" ? `<span class="confidence">Confidence: <b>${result.confidence}%</b></span>` : ""}
+      </div>
+      <div class="claim-text">"${escHtml(claim.claim)}"</div>`;
+
+  if (result && statusKey !== "CHECKING") {
+    html += `<div class="claim-explanation">${escHtml(result.explanation)}</div>`;
+    if (result.correction) {
+      html += `<div class="correction-box"><span class="correction-label">✏ CORRECTION: </span><span class="correction-text">${escHtml(result.correction)}</span></div>`;
+    }
+    if (result.sources?.length) {
+      html += `<div class="sources">${result.sources.map(s => `<span class="source-tag">🔗 ${escHtml(s)}</span>`).join("")}</div>`;
+    }
+  }
+  html += `</div></div>`;
+  card.innerHTML = html;
+}
+
+function escHtml(str) {
+  return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function updateSummary(results) {
+  const vals = Object.values(results);
+  document.getElementById("sumVerified").textContent = vals.filter(r => r.status === "VERIFIED").length;
+  document.getElementById("sumInaccurate").textContent = vals.filter(r => r.status === "INACCURATE").length;
+  document.getElementById("sumFalse").textContent = vals.filter(r => r.status === "FALSE").length;
+  document.getElementById("sumTotal").textContent = claimsData.length;
+}
+
+async function handleAnalyze() {
+  if (!selectedFile) return;
+  const btn = document.getElementById("analyzeBtn");
+  btn.disabled = true;
+  btn.textContent = "📖 Extracting claims...";
+  document.getElementById("errorBox").style.display = "none";
+  document.getElementById("claimsList").innerHTML = "";
+  document.getElementById("doneMsg").style.display = "none";
+  document.getElementById("summaryRow").style.display = "none";
+  document.getElementById("progressBar").style.display = "none";
+
+  try {
+    const base64 = await toBase64(selectedFile);
+
+    // Step 1: Extract
+    const extractData = await callClaude({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 1000,
+      system: `You are a claim extraction expert. Extract ONLY specific, verifiable factual claims from documents — stats, numbers, dates, financial figures, technical specs, named events with dates, percentages, rankings. Return ONLY a JSON array (no markdown, no extra text) like: [{"id":1,"claim":"...","context":"brief context"}]. Extract 5-12 claims max. Skip vague opinions.`,
+      messages: [{
+        role: "user",
+        content: [
+          { type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } },
+          { type: "text", text: "Extract all specific, verifiable factual claims from this PDF." }
+        ]
+      }]
+    });
+
+    const extractText = extractData.content.map(b => b.text || "").join("");
+    claimsData = parseJSON(extractText);
+
+    // Render placeholders
+    const list = document.getElementById("claimsList");
+    list.innerHTML = "";
+    claimsData.forEach(c => {
+      const div = document.createElement("div");
+      div.className = "claim-card";
+      div.id = "claim-" + c.id;
+      list.appendChild(div);
+      renderClaimCard(c, null);
+    });
+
+    document.getElementById("summaryRow").style.display = "flex";
+    document.getElementById("progressBar").style.display = "block";
+    updateSummary({});
+    btn.textContent = "🔍 Verifying... 0%";
+
+    const results = {};
+
+    // Step 2: Verify each claim
+    for (let i = 0; i < claimsData.length; i++) {
+      const claim = claimsData[i];
+      results[claim.id] = { status: "CHECKING" };
+      renderClaimCard(claim, results[claim.id]);
+
+      const verifyData = await callClaude({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        system: `You are a fact-checking agent. Use web search to verify claims. Return ONLY JSON (no markdown): {"status":"VERIFIED"|"INACCURATE"|"FALSE","confidence":0-100,"explanation":"2-3 sentences","correction":null or "the correct fact if wrong","sources":["source1","source2"]}`,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{
+          role: "user",
+          content: `Fact-check this claim: "${claim.claim}"\nContext: ${claim.context}\n\nSearch the web, verify accuracy, and return your verdict as JSON.`
+        }]
+      });
+
+      const verifyText = verifyData.content.map(b => b.text || "").join("");
+      let verdict;
+      try { verdict = parseJSON(verifyText); }
+      catch { verdict = { status: "FALSE", confidence: 0, explanation: "Could not verify.", correction: null, sources: [] }; }
+
+      results[claim.id] = verdict;
+      renderClaimCard(claim, verdict);
+      updateSummary(results);
+
+      const pct = Math.round(((i + 1) / claimsData.length) * 100);
+      document.getElementById("progressFill").style.width = pct + "%";
+      btn.textContent = `🔍 Verifying... ${pct}%`;
+    }
+
+    btn.disabled = false;
+    btn.textContent = "🔍 Analyze & Fact-Check PDF";
+    document.getElementById("doneMsg").style.display = "block";
+    document.getElementById("doneMsg").textContent = `✅ Fact-check complete · ${claimsData.length} claims analyzed`;
+
+  } catch (e) {
+    const eb = document.getElementById("errorBox");
+    eb.style.display = "block";
+    eb.textContent = "❌ " + (e.message || "An error occurred. Check your API key and try again.");
+    btn.disabled = false;
+    btn.textContent = "🔍 Analyze & Fact-Check PDF";
+  }
+}
+</script>
+</body>
+</html>
