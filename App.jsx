@@ -33,7 +33,7 @@ async function extractAndVerifyClaims(pdfBase64) {
 }
 
 async function verifySingleClaim(claim) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
+  const res = await fetch("AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
