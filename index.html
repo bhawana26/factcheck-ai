@@ -82,6 +82,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:#F8FAFC;min-height:100v
 </div>
 
 <script>
+  const API_KEY = "AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM";
 const STATUSES = {
   VERIFIED:   { label: "Verified",              color: "#10B981", bg: "#ECFDF5", icon: "✓" },
   INACCURATE: { label: "Inaccurate",            color: "#F59E0B", bg: "#FFFBEB", icon: "⚠" },
@@ -125,7 +126,7 @@ async function toBase64(file) {
 
 async function callGemini(prompt) {
 const res = await fetch(
-`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM}`,
+https:generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY},
 {
 method: "POST",
 headers: {
