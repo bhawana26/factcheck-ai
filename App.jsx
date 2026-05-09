@@ -10,45 +10,64 @@ const STATUSES = {
 async function extractAndVerifyClaims(pdfBase64) {
   const extractRes = await fetch("AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: `You are a claim extraction expert. Extract ONLY specific, verifiable factual claims from documents — stats, numbers, dates, financial figures, technical specs, named events with dates, percentages, rankings. Return ONLY a JSON array (no markdown, no extra text) like: [{"id":1,"claim":"...","context":"brief context"}]. Extract 5-12 claims max. Skip vague opinions.`,
-      messages: [
+  contents: [
+    {
+      parts: [
         {
-          role: "user",
-          content: [
-            { type: "document", source: { type: "base64", media_type: "application/pdf", data: pdfBase64 } },
-            { type: "text", text: "Extract all specific, verifiable factual claims from this PDF." }
-          ]
+          text: `Extract all factual claims from this PDF and return ONLY valid JSON array.
+
+PDF Base64:
+${pdfBase64}`
         }
       ]
-    })
+    }
+  ]
+}),
+    headers: { "Content-Type": "application/json" }
   });
   const extractData = await extractRes.json();
-  const text = extractData.content.map(b => b.text || "").join("");
-  const clean = text.replace(/```json|```/g, "").trim();
+  const text =   extractData.candidates[0].content.parts[0].text;
+  const clean = text.trim();
   return JSON.parse(clean);
 }
 
 async function verifySingleClaim(claim) {
   const res = await fetch("AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 1000,
-      system: `You are a fact-checking agent. Use web search to verify claims. Return ONLY JSON (no markdown): {"status":"VERIFIED"|"INACCURATE"|"FALSE","confidence":0-100,"explanation":"2-3 sentences","correction":"null or the correct fact if wrong","sources":["source1","source2"]}`,
-      
-      messages: [
-        { role: "user", content: `Fact-check this claim: "${claim.claim}"\nContext: ${claim.context}\n\nSearch the web, verify accuracy, and return your verdict as JSON.` }
+  contents: [
+    {
+      parts: [
+        {
+          text: `
+Fact-check this claim:
+
+${claim.claim}
+
+Context:
+${claim.context}
+
+Return ONLY JSON in this format:
+
+{
+  "status": "VERIFIED",
+  "confidence": 90,
+  "explanation": "short explanation",
+  "correction": null,
+  "sources": []
+}
+`
+        }
       ]
-    })
+    }
+  ]
+}),
+    headers: { "Content-Type": "application/json" }
   });
   const data = await res.json();
-  const text = data.content.map(b => b.text || "").join("");
-  const clean = text.replace(/```json|```/g, "").trim();
+  const text = data.candidates[0].content.parts[0].text;
+  const clean = text.trim();
   try {
     return JSON.parse(clean);
   } catch {
