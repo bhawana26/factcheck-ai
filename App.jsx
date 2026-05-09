@@ -8,7 +8,7 @@ const STATUSES = {
 };
 
 async function extractAndVerifyClaims(pdfBase64) {
-  const extractRes = await fetch("https://api.anthropic.com/v1/messages", {
+  const extractRes = await fetch("AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
