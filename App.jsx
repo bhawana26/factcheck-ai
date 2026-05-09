@@ -40,7 +40,7 @@ async function verifySingleClaim(claim) {
       model: "claude-sonnet-4-20250514",
       max_tokens: 1000,
       system: `You are a fact-checking agent. Use web search to verify claims. Return ONLY JSON (no markdown): {"status":"VERIFIED"|"INACCURATE"|"FALSE","confidence":0-100,"explanation":"2-3 sentences","correction":"null or the correct fact if wrong","sources":["source1","source2"]}`,
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
+      
       messages: [
         { role: "user", content: `Fact-check this claim: "${claim.claim}"\nContext: ${claim.context}\n\nSearch the web, verify accuracy, and return your verdict as JSON.` }
       ]
