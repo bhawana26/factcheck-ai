@@ -3,328 +3,455 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>FactCheck AI — PDF Fact Verification</title>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<title>FactCheck AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
 <style>
+:root{--navy:#0D1B3E;--teal:#00C6BE;--light-teal:#E0F7F6;--white:#fff;--off:#F4F7FC;--gray:#64748B;--lg:#E2E8F0;--green:#10B981;--amber:#F59E0B;--red:#EF4444;--purple:#6366F1}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Inter',system-ui,sans-serif;background:#F8FAFC;min-height:100vh}
-.header{background:#0D1B3E;padding:16px 32px;display:flex;align-items:center;gap:12}
-.logo{width:36px;height:36px;background:#00C6BE;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#0D1B3E;flex-shrink:0}
-.logo-text h1{color:#fff;font-size:18px;font-weight:700;letter-spacing:-0.3px}
-.logo-text p{color:#7A96B0;font-size:12px}
-.container{max-width:860px;margin:0 auto;padding:32px 20px}
-.upload-area{border:2px dashed #CBD5E1;border-radius:16px;background:#fff;padding:40px 24px;text-align:center;cursor:pointer;transition:all 0.2s;margin-bottom:24px}
-.upload-area:hover,.upload-area.dragover{border-color:#00C6BE;background:#E0F7F6}
-.upload-area.has-file{border-color:#10B981;background:#ECFDF5}
-.upload-icon{font-size:40px;margin-bottom:8px}
-.upload-title{font-weight:600;color:#1E293B;font-size:16px}
-.upload-sub{color:#6B7280;font-size:13px;margin-top:4px}
-.btn{width:100%;padding:14px;border-radius:12px;border:none;background:#0D1B3E;color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:28px;transition:background 0.2s;font-family:inherit}
-.btn:disabled{background:#CBD5E1;cursor:not-allowed}
-.progress-bar{background:#E2E8F0;border-radius:8px;height:8px;margin-bottom:24px;overflow:hidden}
-.progress-fill{background:#00C6BE;height:100%;transition:width 0.4s;border-radius:8px}
-.summary{display:flex;gap:12px;margin-bottom:28px}
-.summary-card{flex:1;border-radius:12px;padding:14px 12px;text-align:center;border:1.5px solid transparent}
-.summary-card .val{font-size:28px;font-weight:800}
-.summary-card .lbl{font-size:12px;color:#6B7280;font-weight:500}
-.claim-card{border-radius:14px;padding:20px 22px;margin-bottom:14px;border:1.5px solid #E2E8F0;background:#fff;transition:all 0.3s}
-.claim-header{display:flex;gap:12px;align-items:flex-start}
-.claim-badge{width:28px;height:28px;min-width:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
-.claim-status{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px}
-.claim-text{font-weight:600;color:#1E293B;font-size:15px;margin-bottom:6px;line-height:1.5}
-.claim-explanation{color:#374151;font-size:13.5px;line-height:1.6}
-.correction-box{background:#fff;border:1px solid #FCD34D;border-radius:8px;padding:8px 12px;margin-top:8px}
-.correction-label{font-size:12px;font-weight:700;color:#92400E}
-.correction-text{font-size:13px;color:#78350F}
+body{font-family:'DM Sans',sans-serif;background:var(--off);min-height:100vh;color:var(--navy)}
+.header{background:var(--navy);padding:16px 40px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:38px;height:38px;background:var(--teal);border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--navy)}
+.logo-name{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;color:#fff}
+.logo-tag{font-size:12px;color:#7A96B0}
+.badge{background:#1a3a6b;border:1px solid #2a5a9b;border-radius:20px;padding:6px 14px;font-size:12px;color:var(--teal);font-weight:600}
+.wrap{max-width:860px;margin:0 auto;padding:36px 20px}
+
+/* API KEY */
+.api-box{background:#fff;border-radius:16px;padding:24px;margin-bottom:22px;border:1.5px solid var(--lg)}
+.api-box h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px}
+.api-box p{font-size:13px;color:var(--gray);margin-bottom:14px;line-height:1.6}
+.api-row{display:flex;gap:10px}
+.api-input{flex:1;padding:10px 14px;border:1.5px solid var(--lg);border-radius:10px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;color:var(--navy)}
+.api-input:focus{border-color:var(--teal)}
+.save-btn{padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.api-status{font-size:12px;margin-top:8px;font-weight:600;min-height:18px}
+.free-note{background:var(--light-teal);border:1px solid var(--teal);border-radius:10px;padding:10px 14px;font-size:12px;color:#0a7a75;margin-top:10px;line-height:1.7}
+.free-note a{color:#0a7a75;font-weight:700}
+
+/* UPLOAD */
+.upload{border:2px dashed var(--lg);border-radius:20px;background:#fff;padding:44px 24px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:18px}
+.upload:hover,.upload.over{border-color:var(--teal);background:var(--light-teal)}
+.upload.ok{border-color:var(--green);background:#ECFDF5;border-style:solid}
+.upload-icon{font-size:40px;margin-bottom:10px}
+.upload-title{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--navy)}
+.upload-sub{font-size:13px;color:var(--gray);margin-top:5px}
+
+/* BUTTON */
+.btn{width:100%;padding:15px;border-radius:14px;border:none;background:var(--navy);color:#fff;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:22px;transition:all .2s;font-family:'Syne',sans-serif}
+.btn:hover:not(:disabled){background:#1a3a6b;transform:translateY(-1px);box-shadow:0 6px 20px rgba(13,27,62,.2)}
+.btn:disabled{background:var(--lg);color:#94A3B8;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* PROGRESS */
+.prog-wrap{margin-bottom:18px}
+.prog-label{font-size:13px;color:var(--gray);margin-bottom:6px;font-weight:500}
+.prog-bar{background:var(--lg);border-radius:8px;height:8px;overflow:hidden}
+.prog-fill{background:linear-gradient(90deg,var(--teal),#00a8e8);height:100%;transition:width .5s ease;border-radius:8px}
+
+/* SUMMARY */
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.sum-card{background:#fff;border-radius:14px;padding:16px;text-align:center;border:1.5px solid var(--lg)}
+.sum-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;line-height:1}
+.sum-lbl{font-size:12px;color:var(--gray);font-weight:500;margin-top:4px}
+
+/* CARDS */
+.card{background:#fff;border-radius:16px;padding:22px;margin-bottom:14px;border:1.5px solid var(--lg);transition:all .3s}
+.card-row{display:flex;gap:14px;align-items:flex-start}
+.dot{width:30px;height:30px;min-width:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;margin-top:2px}
+.card-body{flex:1}
+.card-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px}
+.status-lbl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.8px}
+.conf{font-size:12px;color:var(--gray);background:var(--off);padding:3px 10px;border-radius:20px;font-weight:600}
+.claim-text{font-weight:600;font-size:15px;color:var(--navy);margin-bottom:8px;line-height:1.55;font-family:'Syne',sans-serif}
+.expl{font-size:13.5px;color:#374151;line-height:1.7}
+.correction{background:#FFFBEB;border:1px solid #FCD34D;border-radius:10px;padding:10px 14px;margin-top:10px;font-size:13px;color:#78350F;line-height:1.6}
+.correction b{color:#92400E}
 .sources{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
-.source-tag{background:#E2E8F0;color:#475569;font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500}
-.error-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px 20px;color:#991B1B;margin-bottom:20px}
-.confidence{font-size:12px;color:#6B7280}
-.done-msg{text-align:center;padding:20px;color:#6B7280;font-size:14px}
+.src-tag{background:var(--off);color:var(--gray);font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;border:1px solid var(--lg)}
+
+.error{background:#FEF2F2;border:1.5px solid #FECACA;border-radius:14px;padding:16px 20px;color:#991B1B;margin-bottom:18px;font-size:14px}
+.done{text-align:center;padding:22px;color:var(--gray);font-size:14px;background:#fff;border-radius:14px;border:1.5px solid var(--lg)}
+
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.spinning{animation:spin 1s linear infinite}
+.spin{animation:spin 1s linear infinite;display:inline-block}
+@media(max-width:580px){.summary{grid-template-columns:repeat(2,1fr)}.header{padding:14px 20px}}
 </style>
 </head>
 <body>
 <div class="header">
-  <div class="logo">F</div>
-  <div class="logo-text">
-    <h1>FactCheck AI</h1>
-    <p>Automated PDF Fact-Verification Agent</p>
+  <div class="logo">
+    <div class="logo-icon">F</div>
+    <div>
+      <div class="logo-name">FactCheck AI</div>
+      <div class="logo-tag">Automated PDF Fact-Verification Agent</div>
+    </div>
   </div>
+  <div class="badge">⚡ Powered by Gemini (Free)</div>
 </div>
 
-<div class="container">
-  <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-    <div class="upload-icon" id="uploadIcon">⬆️</div>
+<div class="wrap">
+  <!-- API KEY -->
+  <div class="api-box">
+    <h3>🔑 Enter your FREE Google Gemini API Key</h3>
+    <p>Uses Google Gemini's free tier — no credit card required. Your key stays in your browser only.</p>
+    <div class="api-row">
+      <input class="api-input" type="password" id="keyInput" placeholder="Paste your Gemini API key (AIza...)"/>
+      <button class="save-btn" onclick="saveKey()">Save Key</button>
+    </div>
+    <div class="api-status" id="keyStatus"></div>
+    <div class="free-note">
+      🆓 <strong>Get a FREE key in 30 seconds:</strong><br/>
+      1. Go to <a href="https://aistudio.google.com/apikey" target="_blank"><strong>aistudio.google.com/apikey</strong></a><br/>
+      2. Sign in with Google → Click <strong>"Create API Key"</strong><br/>
+      3. Copy the key (starts with AIza...) and paste it above<br/>
+      Free tier: 15 requests/min, 1500/day — more than enough!
+    </div>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload" id="uploadBox" onclick="document.getElementById('fileIn').click()">
+    <div class="upload-icon" id="uploadIcon">📄</div>
     <div class="upload-title" id="uploadTitle">Drop your PDF here or click to upload</div>
-    <div class="upload-sub" id="uploadSub">Marketing reports, press releases, research docs — any PDF with factual claims</div>
-    <input type="file" id="fileInput" accept=".pdf" style="display:none" onchange="handleFileChange(event)"/>
+    <div class="upload-sub" id="uploadSub">Marketing reports, press releases, research docs with factual claims</div>
+    <input type="file" id="fileIn" accept=".pdf,application/pdf" style="display:none" onchange="pickFile(event)"/>
   </div>
 
-  <button class="btn" id="analyzeBtn" onclick="handleAnalyze()" disabled>🔍 Analyze & Fact-Check PDF</button>
+  <button class="btn" id="goBtn" onclick="go()" disabled>🔍 Analyze & Fact-Check PDF</button>
 
-  <div class="progress-bar" id="progressBar" style="display:none">
-    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  <div id="progWrap" style="display:none" class="prog-wrap">
+    <div class="prog-label" id="progLabel">Working...</div>
+    <div class="prog-bar"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
   </div>
 
-  <div id="errorBox" style="display:none" class="error-box"></div>
-  <div id="summaryRow" class="summary" style="display:none">
-    <div class="summary-card" style="background:#ECFDF5;border-color:#10B98140"><div class="val" style="color:#10B981" id="sumVerified">0</div><div class="lbl">Verified</div></div>
-    <div class="summary-card" style="background:#FFFBEB;border-color:#F59E0B40"><div class="val" style="color:#F59E0B" id="sumInaccurate">0</div><div class="lbl">Inaccurate</div></div>
-    <div class="summary-card" style="background:#FEF2F2;border-color:#EF444440"><div class="val" style="color:#EF4444" id="sumFalse">0</div><div class="lbl">False / No Evidence</div></div>
-    <div class="summary-card" style="background:#EEF2FF;border-color:#6366F140"><div class="val" style="color:#6366F1" id="sumTotal">0</div><div class="lbl">Total Claims</div></div>
+  <div id="errBox" class="error" style="display:none"></div>
+
+  <div class="summary" id="sumRow" style="display:none">
+    <div class="sum-card"><div class="sum-val" style="color:var(--green)" id="sV">0</div><div class="sum-lbl">✓ Verified</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:var(--amber)" id="sI">0</div><div class="sum-lbl">⚠ Inaccurate</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:var(--red)" id="sF">0</div><div class="sum-lbl">✗ False</div></div>
+    <div class="sum-card"><div class="sum-val" style="color:var(--purple)" id="sT">0</div><div class="sum-lbl">Total Claims</div></div>
   </div>
 
-  <div id="claimsList"></div>
-  <div id="doneMsg" style="display:none" class="done-msg"></div>
+  <div id="cardList"></div>
+  <div id="doneBox" style="display:none" class="done"></div>
 </div>
 
 <script>
-  const API_KEY = "AIzaSyBcq6sgavF3ekmKnREJaVXzh9ssgO25stM";
-const STATUSES = {
-  VERIFIED:   { label: "Verified",              color: "#10B981", bg: "#ECFDF5", icon: "✓" },
-  INACCURATE: { label: "Inaccurate",            color: "#F59E0B", bg: "#FFFBEB", icon: "⚠" },
-  FALSE:      { label: "False / No Evidence",   color: "#EF4444", bg: "#FEF2F2", icon: "✗" },
-  CHECKING:   { label: "Checking...",            color: "#6366F1", bg: "#EEF2FF", icon: "⟳" },
-};
+// ── State ────────────────────────────────────────────────────
+let file = null;
+let apiKey = '';
+let claims = [];
 
-let selectedFile = null;
-let claimsData = [];
-
-function handleFileChange(e) {
-  const f = e.target.files[0];
-  if (f && f.type === "application/pdf") setFile(f);
+// Load saved key from localStorage safely
+try { apiKey = localStorage.getItem('gk') || ''; } catch(e){}
+if (apiKey) {
+  document.getElementById('keyInput').value = apiKey;
+  setKeyStatus('✅ API key loaded — ready to analyze!', 'var(--green)');
+  refreshBtn();
 }
+
+// ── Key management ──────────────────────────────────────────
+function saveKey() {
+  const v = document.getElementById('keyInput').value.trim();
+  if (!v) { setKeyStatus('❌ Please paste your API key first', 'var(--red)'); return; }
+  if (!v.startsWith('AIza')) { setKeyStatus('❌ Key should start with AIza... — check you copied it correctly', 'var(--red)'); return; }
+  apiKey = v;
+  try { localStorage.setItem('gk', v); } catch(e){}
+  setKeyStatus('✅ Key saved! You can now analyze PDFs.', 'var(--green)');
+  refreshBtn();
+}
+
+function setKeyStatus(msg, color) {
+  const el = document.getElementById('keyStatus');
+  el.textContent = msg;
+  el.style.color = color;
+}
+
+// ── File handling ────────────────────────────────────────────
+function pickFile(e) { const f = e.target.files[0]; if (f) setFile(f); }
 
 function setFile(f) {
-  selectedFile = f;
-  const area = document.getElementById("uploadArea");
-  area.className = "upload-area has-file";
-  document.getElementById("uploadIcon").textContent = "📄";
-  document.getElementById("uploadTitle").textContent = f.name;
-  document.getElementById("uploadSub").textContent = (f.size / 1024).toFixed(1) + " KB · Click to change";
-  document.getElementById("analyzeBtn").disabled = false;
-  area.ondragover = e => { e.preventDefault(); area.classList.add("dragover"); };
-  area.ondragleave = () => area.classList.remove("dragover");
-  area.ondrop = e => { e.preventDefault(); area.classList.remove("dragover"); const d = e.dataTransfer.files[0]; if (d?.type === "application/pdf") setFile(d); };
+  if (f.type && f.type !== 'application/pdf' && !f.name.endsWith('.pdf')) {
+    showErr('Please upload a PDF file only.'); return;
+  }
+  file = f;
+  document.getElementById('uploadBox').className = 'upload ok';
+  document.getElementById('uploadIcon').textContent = '📋';
+  document.getElementById('uploadTitle').textContent = f.name;
+  document.getElementById('uploadSub').textContent = (f.size/1024).toFixed(1) + ' KB · Click to change';
+  refreshBtn();
 }
 
-document.getElementById("uploadArea").ondragover = e => { e.preventDefault(); document.getElementById("uploadArea").classList.add("dragover"); };
-document.getElementById("uploadArea").ondragleave = () => document.getElementById("uploadArea").classList.remove("dragover");
-document.getElementById("uploadArea").ondrop = e => { e.preventDefault(); document.getElementById("uploadArea").classList.remove("dragover"); const f = e.dataTransfer.files[0]; if (f?.type === "application/pdf") setFile(f); };
+const ub = document.getElementById('uploadBox');
+ub.ondragover = e => { e.preventDefault(); ub.classList.add('over'); };
+ub.ondragleave = () => ub.classList.remove('over');
+ub.ondrop = e => { e.preventDefault(); ub.classList.remove('over'); const f = e.dataTransfer.files[0]; if(f) setFile(f); };
 
-async function toBase64(file) {
-  return new Promise((res, rej) => {
-    const r = new FileReader();
-    r.onload = () => res(r.result.split(",")[1]);
-    r.onerror = () => rej(new Error("Read failed"));
-    r.readAsDataURL(file);
+function refreshBtn() {
+  document.getElementById('goBtn').disabled = !(file && apiKey);
+}
+
+// ── PDF text extraction (no external library) ─────────────
+function extractText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        const bytes = new Uint8Array(e.target.result);
+        let text = '';
+        // Extract readable text from PDF binary
+        for (let i = 0; i < bytes.length - 1; i++) {
+          const c = bytes[i];
+          if (c >= 32 && c <= 126) {
+            text += String.fromCharCode(c);
+          } else if (c === 10 || c === 13) {
+            text += ' ';
+          }
+        }
+        // Clean up PDF artifacts and extract meaningful content
+        text = text
+          .replace(/[^\x20-\x7E\s]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .replace(/(<<|>>|\[|\]|obj|endobj|stream|endstream)/g, ' ')
+          .trim();
+
+        // Try to pull out text between BT/ET markers (PDF text objects)
+        const btMatches = [];
+        const raw = e.target.result;
+        const decoder = new TextDecoder('latin1');
+        const fullText = decoder.decode(raw);
+        
+        // Extract text between parentheses (PDF string objects)
+        const parenRegex = /\(([^)]{3,})\)/g;
+        let match;
+        while ((match = parenRegex.exec(fullText)) !== null) {
+          const str = match[1].replace(/\\n/g,' ').replace(/\\r/g,' ').replace(/\\/g,'').trim();
+          if (str.length > 3 && /[a-zA-Z]{2,}/.test(str)) {
+            btMatches.push(str);
+          }
+        }
+        
+        const extracted = btMatches.join(' ').replace(/\s+/g,' ').trim();
+        resolve(extracted.length > 100 ? extracted : text);
+      } catch(err) {
+        reject(new Error('Could not read PDF: ' + err.message));
+      }
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsArrayBuffer(file);
   });
 }
 
-async function callGemini(prompt) {
-const res = await fetch(
-https:generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY},
-{
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify({
-contents: [
-{
-parts: [
-{
-text: prompt
-}
-]
-}
-]
-})
-}
-);
+// ── Gemini API ───────────────────────────────────────────────
+async function gemini(prompt, withSearch) {
+  const model = withSearch ? 'gemini-2.0-flash' : 'gemini-1.5-flash';
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: 1024 }
+  };
+  if (withSearch) body.tools = [{ google_search: {} }];
 
-const data = await res.json();
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
 
-console.log(data);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    const msg = err?.error?.message || `HTTP ${res.status}`;
+    if (res.status === 400) throw new Error('Invalid API key. Go to aistudio.google.com to get a valid key.');
+    if (res.status === 403) throw new Error('API key not authorized. Make sure you enabled the Gemini API in Google AI Studio.');
+    if (res.status === 429) throw new Error('Rate limit hit. Wait 1 minute and try again (free tier: 15 req/min).');
+    throw new Error(msg);
+  }
 
-return data;
+  const data = await res.json();
+  return data.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
 }
-
 
 function parseJSON(text) {
-try {
-const clean = text
-.replace(/`json/g, "")
-      .replace(/`/g, "")
-.trim();
-
-```
-return JSON.parse(clean);
-```
-
-} catch (e) {
-console.error("JSON Parse Error:", e);
-return [];
-}
+  // Try to extract JSON from the response
+  let clean = text;
+  const fence = text.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence) clean = fence[1];
+  const arr = clean.match(/(\[[\s\S]*\])/);
+  if (arr) clean = arr[1];
+  const obj = clean.match(/(\{[\s\S]*\})/);
+  if (obj) clean = obj[1];
+  return JSON.parse(clean.trim());
 }
 
-function renderClaimCard(claim, result) {
-  const statusKey = result?.status || null;
-  const st = statusKey ? STATUSES[statusKey] : null;
-  const card = document.getElementById("claim-" + claim.id);
-  if (!card) return;
+// ── UI helpers ───────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-  card.style.background = st ? st.bg : "#fff";
-  card.style.borderColor = st ? st.color + "40" : "#E2E8F0";
+function showErr(msg) {
+  const b = document.getElementById('errBox');
+  b.style.display = 'block';
+  b.innerHTML = '❌ ' + esc(msg);
+}
 
-  let html = `<div class="claim-header">
-    <div class="claim-badge ${statusKey === "CHECKING" ? "spinning" : ""}" style="background:${st ? st.color : "#CBD5E1"}">${st ? st.icon : "?"}</div>
-    <div style="flex:1">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-        <span class="claim-status" style="color:${st ? st.color : "#6B7280"}">${st ? st.label : "Pending"}</span>
-        ${result?.confidence !== undefined && statusKey !== "CHECKING" ? `<span class="confidence">Confidence: <b>${result.confidence}%</b></span>` : ""}
+function setProgress(pct, label) {
+  document.getElementById('progFill').style.width = pct + '%';
+  document.getElementById('progLabel').textContent = label;
+}
+
+const ST = {
+  VERIFIED:   { label:'Verified',            color:'var(--green)',  bg:'#ECFDF5', border:'#10B98130', icon:'✓' },
+  INACCURATE: { label:'Inaccurate',          color:'var(--amber)',  bg:'#FFFBEB', border:'#F59E0B30', icon:'⚠' },
+  FALSE:      { label:'False / No Evidence', color:'var(--red)',    bg:'#FEF2F2', border:'#EF444430', icon:'✗' },
+  CHECKING:   { label:'Checking…',           color:'var(--purple)', bg:'#EEF2FF', border:'#6366F130', icon:'⟳' },
+};
+
+function renderCard(claim, result) {
+  const el = document.getElementById('c' + claim.id);
+  if (!el) return;
+  const sk = result?.status || 'PENDING';
+  const st = ST[sk];
+  if (st) { el.style.background = st.bg; el.style.borderColor = st.border; }
+  const spinning = sk === 'CHECKING';
+
+  let h = `<div class="card-row">
+    <div class="dot ${spinning?'spin':''}" style="background:${st?st.color:'#CBD5E1'}">${st?st.icon:'?'}</div>
+    <div class="card-body">
+      <div class="card-meta">
+        <span class="status-lbl" style="color:${st?st.color:'#6B7280'}">${st?st.label:'Pending'}</span>
+        ${result?.confidence!=null&&!spinning?`<span class="conf">Confidence: ${result.confidence}%</span>`:''}
       </div>
-      <div class="claim-text">"${escHtml(claim.claim)}"</div>`;
+      <div class="claim-text">"${esc(claim.claim)}"</div>`;
 
-  if (result && statusKey !== "CHECKING") {
-    html += `<div class="claim-explanation">${escHtml(result.explanation)}</div>`;
-    if (result.correction) {
-      html += `<div class="correction-box"><span class="correction-label">✏ CORRECTION: </span><span class="correction-text">${escHtml(result.correction)}</span></div>`;
-    }
-    if (result.sources?.length) {
-      html += `<div class="sources">${result.sources.map(s => `<span class="source-tag">🔗 ${escHtml(s)}</span>`).join("")}</div>`;
-    }
+  if (result && !spinning) {
+    h += `<div class="expl">${esc(result.explanation)}</div>`;
+    if (result.correction)
+      h += `<div class="correction"><b>✏ CORRECTION:</b> ${esc(result.correction)}</div>`;
+    if (result.sources?.length)
+      h += `<div class="sources">${result.sources.map(s=>`<span class="src-tag">🔗 ${esc(s)}</span>`).join('')}</div>`;
   }
-  html += `</div></div>`;
-  card.innerHTML = html;
-}
-
-function escHtml(str) {
-  return String(str || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+  h += `</div></div>`;
+  el.innerHTML = h;
 }
 
 function updateSummary(results) {
-  const vals = Object.values(results);
-  document.getElementById("sumVerified").textContent = vals.filter(r => r.status === "VERIFIED").length;
-  document.getElementById("sumInaccurate").textContent = vals.filter(r => r.status === "INACCURATE").length;
-  document.getElementById("sumFalse").textContent = vals.filter(r => r.status === "FALSE").length;
-  document.getElementById("sumTotal").textContent = claimsData.length;
+  const v = Object.values(results);
+  document.getElementById('sV').textContent = v.filter(r=>r.status==='VERIFIED').length;
+  document.getElementById('sI').textContent = v.filter(r=>r.status==='INACCURATE').length;
+  document.getElementById('sF').textContent = v.filter(r=>r.status==='FALSE').length;
+  document.getElementById('sT').textContent = claims.length;
 }
 
-async function handleAnalyze() {
-  if (!selectedFile) return;
-  const btn = document.getElementById("analyzeBtn");
+// ── Main analysis ────────────────────────────────────────────
+async function go() {
+  if (!file || !apiKey) return;
+
+  // Reset UI
+  const btn = document.getElementById('goBtn');
   btn.disabled = true;
-  btn.textContent = "📖 Extracting claims...";
-  document.getElementById("errorBox").style.display = "none";
-  document.getElementById("claimsList").innerHTML = "";
-  document.getElementById("doneMsg").style.display = "none";
-  document.getElementById("summaryRow").style.display = "none";
-  document.getElementById("progressBar").style.display = "none";
+  btn.textContent = '📖 Reading PDF…';
+  document.getElementById('errBox').style.display = 'none';
+  document.getElementById('cardList').innerHTML = '';
+  document.getElementById('doneBox').style.display = 'none';
+  document.getElementById('sumRow').style.display = 'none';
+  document.getElementById('progWrap').style.display = 'block';
+  setProgress(5, 'Reading PDF…');
+  claims = [];
 
   try {
-    const base64 = await toBase64(selectedFile);
+    // Step 1: Extract PDF text
+    const pdfText = await extractText(file);
+    if (!pdfText || pdfText.length < 50) throw new Error('Could not extract text from this PDF. Make sure it\'s a text-based PDF (not a scanned image).');
 
-    // Step 1: Extract
-    const extractData = await callGemini(`
-Extract ONLY factual claims from this PDF text.
+    setProgress(20, 'AI is extracting claims…');
+    btn.textContent = '🧠 Extracting claims…';
 
-Return ONLY valid JSON array.
+    // Step 2: Extract claims
+    const extractPrompt = `Extract specific verifiable factual claims from this text. Look for: statistics, percentages, dates, financial figures, market sizes, named records, rankings, or specific numbers.
 
-Format:
-[
-{
-"id":1,
-"claim":"text",
-"context":"text"
-}
-]
+Return ONLY a JSON array like this (no explanation, no markdown):
+[{"id":1,"claim":"The exact claim text","context":"brief topic context"},{"id":2,"claim":"...","context":"..."}]
 
-PDF content:
-${base64.slice(0, 10000)}
-`);
+Extract 5 to 10 claims. Skip opinions or vague statements.
 
-    
+TEXT:
+${pdfText.slice(0, 6000)}`;
 
-    const extractText =
-extractData.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+    const extractOut = await gemini(extractPrompt, false);
+    claims = parseJSON(extractOut);
 
-    claimsData = parseJSON(extractText);
+    if (!Array.isArray(claims) || claims.length === 0) throw new Error('No verifiable claims found in the PDF. Try a document with specific statistics or facts.');
 
-    // Render placeholders
-    const list = document.getElementById("claimsList");
-    list.innerHTML = "";
-    claimsData.forEach(c => {
-      const div = document.createElement("div");
-      div.className = "claim-card";
-      div.id = "claim-" + c.id;
-      list.appendChild(div);
-      renderClaimCard(c, null);
+    // Render skeleton cards
+    const list = document.getElementById('cardList');
+    list.innerHTML = '';
+    claims.forEach(c => {
+      const d = document.createElement('div');
+      d.className = 'card'; d.id = 'c' + c.id;
+      list.appendChild(d);
+      renderCard(c, null);
     });
-
-    document.getElementById("summaryRow").style.display = "flex";
-    document.getElementById("progressBar").style.display = "block";
+    document.getElementById('sumRow').style.display = 'grid';
     updateSummary({});
-    btn.textContent = "🔍 Verifying... 0%";
 
+    // Step 3: Verify each claim
     const results = {};
+    for (let i = 0; i < claims.length; i++) {
+      const c = claims[i];
+      results[c.id] = { status: 'CHECKING' };
+      renderCard(c, results[c.id]);
+      setProgress(20 + Math.round((i / claims.length) * 75), `Verifying claim ${i+1} of ${claims.length}…`);
+      btn.textContent = `🔍 Verifying ${i+1}/${claims.length}…`;
 
-    // Step 2: Verify each claim
-    for (let i = 0; i < claimsData.length; i++) {
-      const claim = claimsData[i];
-      results[claim.id] = { status: "CHECKING" };
-      renderClaimCard(claim, results[claim.id]);
+      const vPrompt = `Fact-check this specific claim by searching for current accurate information:
 
-      const verifyData = await callGemini(`
-Fact-check this claim:
+CLAIM: "${c.claim}"
+CONTEXT: ${c.context}
 
-"${claim.claim}"
+Return ONLY this JSON (no markdown, no extra text):
+{"status":"VERIFIED","confidence":85,"explanation":"Your 2-3 sentence explanation with specific facts.","correction":null,"sources":["Source Name"]}
 
-Context:
-${claim.context}
-
-Return ONLY JSON:
-
-{
-"status":"VERIFIED",
-"confidence":90,
-"explanation":"short explanation",
-"correction":null,
-"sources":[]
-}
-`);
-
-
-      const verifyText =
-verifyData.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+Use status VERIFIED if accurate, INACCURATE if partially wrong or outdated, FALSE if completely wrong or unverifiable.
+The "correction" field should be null if verified, or the correct fact if wrong.`;
 
       let verdict;
-      try { verdict = parseJSON(verifyText); }
-      catch { verdict = { status: "FALSE", confidence: 0, explanation: "Could not verify.", correction: null, sources: [] }; }
+      try {
+        const out = await gemini(vPrompt, true);
+        verdict = parseJSON(out);
+        if (!['VERIFIED','INACCURATE','FALSE'].includes(verdict.status)) verdict.status = 'FALSE';
+      } catch {
+        try {
+          const out2 = await gemini(vPrompt, false);
+          verdict = parseJSON(out2);
+          if (!['VERIFIED','INACCURATE','FALSE'].includes(verdict.status)) verdict.status = 'FALSE';
+        } catch(e2) {
+          verdict = { status: 'FALSE', confidence: 0, explanation: 'Could not verify: ' + e2.message, correction: null, sources: [] };
+        }
+      }
 
-      results[claim.id] = verdict;
-      renderClaimCard(claim, verdict);
+      results[c.id] = verdict;
+      renderCard(c, verdict);
       updateSummary(results);
 
-      const pct = Math.round(((i + 1) / claimsData.length) * 100);
-      document.getElementById("progressFill").style.width = pct + "%";
-      btn.textContent = `🔍 Verifying... ${pct}%`;
+      // Small delay to respect rate limits
+      if (i < claims.length - 1) await new Promise(r => setTimeout(r, 1500));
     }
 
-    btn.disabled = false;
-    btn.textContent = "🔍 Analyze & Fact-Check PDF";
-    document.getElementById("doneMsg").style.display = "block";
-    document.getElementById("doneMsg").textContent = `✅ Fact-check complete · ${claimsData.length} claims analyzed`;
+    setProgress(100, 'Complete!');
+    btn.textContent = '🔍 Analyze & Fact-Check PDF';
+    btn.disabled = false; refreshBtn();
 
-  } catch (e) {
-    const eb = document.getElementById("errorBox");
-    eb.style.display = "block";
-    eb.textContent = "❌ " + (e.message || "An error occurred. Check your API key and try again.");
-    btn.disabled = false;
-    btn.textContent = "🔍 Analyze & Fact-Check PDF";
+    const vals = Object.values(results);
+    document.getElementById('doneBox').style.display = 'block';
+    document.getElementById('doneBox').innerHTML =
+      `✅ Done! <strong>${claims.length} claims</strong> analyzed — ` +
+      `<span style="color:var(--green)">${vals.filter(r=>r.status==='VERIFIED').length} verified</span> · ` +
+      `<span style="color:var(--amber)">${vals.filter(r=>r.status==='INACCURATE').length} inaccurate</span> · ` +
+      `<span style="color:var(--red)">${vals.filter(r=>r.status==='FALSE').length} false</span>`;
+
+  } catch(e) {
+    showErr(e.message || 'Something went wrong. Please try again.');
+    document.getElementById('progWrap').style.display = 'none';
+    btn.textContent = '🔍 Analyze & Fact-Check PDF';
+    btn.disabled = false; refreshBtn();
   }
 }
 </script>
